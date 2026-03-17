@@ -20,13 +20,6 @@ oop-turtle-graphics/
     └── drawing.json
 ```
 
-## Features
-
-- Draw circles, squares, and triangles with a shared turtle pen
-- Optional color and fill per shape
-- Save and load drawings via JSON
-- And most of python turtle graphics' features
-
 ## Status
 
 Work in progress. Currently working on shape drawing logic for turtles.
