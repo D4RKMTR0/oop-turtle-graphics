@@ -13,8 +13,8 @@ Python turtle graphics built around OOP principles. Each shape manages its own d
 ```
 oop-turtle-graphics/
 ├── main.py          # entry point
-├── canvas.py        # manages turtle and shape list
-├── shapes.py        # Circle, Square, Triangle
+├── turtle_manage.py # Turtle and TurtleManager classes.
+├── shapes.py        # Circle, Square, Triangl
 ├── persistence.py   # save/load JSON
 └── data/
     └── drawing.json
