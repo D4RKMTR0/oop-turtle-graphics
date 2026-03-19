@@ -432,6 +432,12 @@ class Star(Shape):
         t.rotate(-angle)
         t.pen_down()
 
+    def _draw(self, t):
+        if self.intersected:
+            self._draw_star_intersected(t)
+        else:
+            self._draw_star_outline(t)
+
     def draw(self, manager, turtle_name):
         t = manager.get_turtle(turtle_name)
 
@@ -442,15 +448,9 @@ class Star(Shape):
 
         if self.is_centered:
             self._offset(t)
-            if self.intersected:
-                self._draw_star_intersected(t)
-            else:
-                self._draw_star_outline(t)
+            self._draw(t)
             self._offset(t, reverse=True)
         else:
-            if self.intersected:
-                self._draw_star_intersected(t)
-            else:
-                self._draw_star_outline(t)
+            self._draw(t)
 
         self._restore_color(t, original_color, original_fill_color)
