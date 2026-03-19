@@ -49,7 +49,7 @@ class TurtleManager:
         })
 
 class Turtle:
-    def __init__(self, manager, name, shape="classic", color="black", size=1, speed=5):
+    def __init__(self, manager, name, shape="classic", color="black", size=1, speed=5, fill_color=None):
         self._manager = manager
         
         self._name = name
@@ -57,6 +57,7 @@ class Turtle:
         self._color = color
         self._size = size
         self._speed = speed
+        self._fill_color = fill_color if fill_color else color
         
         self._t = turtle.Turtle()
         
@@ -64,6 +65,7 @@ class Turtle:
         self._t.color(self._color)
         self._t.pensize(self._size)
         self._t.speed(self._speed)
+        self._t.fillcolor(self._fill_color)
     
     @property
     def pos(self):
@@ -180,3 +182,16 @@ class Turtle:
         self._t.pensize(size)
         
         self._manager.record(self._name, "size", size)
+        
+    def fill_color(self, color=None):
+    
+        if color is None:
+            return self._fill_color
+        
+        if not Turtle._is_valid_color(color):
+            raise ValueError(f"Invalid color: {color}")
+        
+        self._fill_color = color
+        self._t.fillcolor(color)
+        
+        self._manager.record(self._name, "fill_color", color)
