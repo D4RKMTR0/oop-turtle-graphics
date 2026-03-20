@@ -15,11 +15,11 @@ class TurtleManager:
     def turtle_count(self):
         return len(self.turtles)
     
-    def add_turtle(self, name, shape="classic", color="black", size=1, speed=5):
+    def add_turtle(self, name, shape="classic", color="black", fill_color=None, size=1, speed=5):
         if name in self.turtles:
             raise ValueError(f"Turtle '{name}' already exists.")
         
-        self.turtles[name] = Turtle(self, name, shape, color, size, speed)
+        self.turtles[name] = Turtle(self, name, shape, color, size, speed, fill_color)
         
     def remove_turtle(self, name):
         if name not in self.turtles:

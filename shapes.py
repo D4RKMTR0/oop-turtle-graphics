@@ -36,6 +36,15 @@ class Shape:
 
 class Circle(Shape):
     def __init__(self, radius, extent=360, step=None, color=None, fill_color=None, is_filled=False, is_centered=False):
+        if radius <= 0:
+            raise ValueError(f"Radius must be a positive number, got {radius}.")
+
+        if not 0 < extent <= 360:
+            raise ValueError(f"Extent must be between 0 and 360, got {extent}.")
+
+        if step is not None and step <= 0:
+            raise ValueError(f"Step must be a positive number, got {step}.")
+        
         self.radius = radius
         self.extent = extent
         self.step = step
@@ -78,6 +87,9 @@ class Circle(Shape):
 
 class Square(Shape):
     def __init__(self, side_length, color=None, fill_color=None, is_filled=False, is_centered=False):
+        if side_length <= 0:
+            raise ValueError(f"Side length must be a positive number, got '{side_length}'")
+        
         self.side_length = side_length
         self.color = color
         self.fill_color = fill_color
@@ -137,6 +149,9 @@ class Square(Shape):
 
 class Rectangle(Shape):
     def __init__(self, width, height, color=None, fill_color=None, is_filled=False, is_centered=False):
+        if width <= 0 or height <= 0:
+            raise ValueError(f"Width and Height bust be a positive number, got width: {width} and height: {height}")
+        
         self.width = width
         self.height = height
         self.color = color
@@ -198,6 +213,9 @@ class Rectangle(Shape):
 
 class EquilateralTriangle(Shape):
     def __init__(self, side_length, color=None, fill_color=None, is_filled=False, is_centered=False):
+        if side_length <= 0:
+            raise ValueError(f"Side length must be a positive number, got {side_length}.")
+        
         self.side_length = side_length
         self.color = color
         self.fill_color = fill_color
@@ -243,6 +261,9 @@ class EquilateralTriangle(Shape):
 
 class Triangle(Shape):
     def __init__(self, side_a, side_b, side_c, color=None, fill_color=None, is_filled=False, is_centered=False):
+        if side_a <= 0 or side_b <= 0 or side_c <= 0:
+            raise ValueError(f"All sides must be positive numbers, got side_a: {side_a}, side_b: {side_b}, side_c: {side_c}.")
+        
         self.side_a = side_a
         self.side_b = side_b
         self.side_c = side_c
@@ -453,4 +474,104 @@ class Star(Shape):
         else:
             self._draw(t)
 
+        self._restore_color(t, original_color, original_fill_color)
+        
+class Ellipse(Shape):
+    def __init__(self, radius_x, radius_y, color=None, fill_color=None, is_filled=False, is_centered=False, steps=100):
+        if radius_x <= 0:
+            raise ValueError(f"radius_x must be a positive number, got {radius_x}.")
+
+        if radius_y <= 0:
+            raise ValueError(f"radius_y must be a positive number, got {radius_y}.")
+
+        if steps <= 0:
+            raise ValueError(f"Steps must be a positive number, got {steps}.")
+
+        self.radius_x = radius_x
+        self.radius_y = radius_y
+        self.color = color
+        self.fill_color = fill_color
+        self.is_filled = is_filled
+        self.is_centered = is_centered
+        self.steps = steps
+
+    def _get_point(self, origin, angle):
+        angle_rad = math.radians(angle)
+        x = origin[0] + self.radius_x * math.cos(angle_rad)
+        y = origin[1] + self.radius_y * math.sin(angle_rad)
+        return x, y
+
+    def _goto_point(self, t, origin, angle):
+        x, y = self._get_point(origin, angle)
+        t._t.goto(x, y)
+
+    def _draw_ellipse(self, t, origin):
+        step_angle = 360 / self.steps
+
+        self._begin_fill(t)
+
+        t._t.penup()
+        self._goto_point(t, origin, 0)
+        t._t.pendown()
+
+        for i in range(1, self.steps + 1):
+            self._goto_point(t, origin, i * step_angle)
+
+        self._end_fill(t)
+
+    def _restore_position(self, t, origin):
+        t.pen_up()
+        t.move_to(origin[0], origin[1])
+        t.pen_down()
+
+    def draw(self, manager, turtle_name):
+        t = manager.get_turtle(turtle_name)
+
+        original_color = t.color()
+        original_fill_color = t.fill_color()
+        origin = t.pos
+
+        self._apply_color(t)
+        self._draw_ellipse(t, origin)
+
+        if self.is_centered:
+            self._restore_position(t, origin)
+
+        self._restore_color(t, original_color, original_fill_color)
+        
+class Spiral(Shape):
+    def __init__(self, steps, growth, angle, color=None, fill_color=None, is_filled=False):
+        if steps <= 0:
+            raise ValueError(f"Steps must be a positive number, got {steps}.")
+
+        if growth <= 0:
+            raise ValueError(f"Growth must be a positive number, got {growth}.")
+        
+        if angle == 0:
+            raise ValueError("Angle cannot be 0, the spiral would never turn.")
+
+        self.steps = steps
+        self.growth = growth
+        self.angle = angle
+        self.color = color
+        self.fill_color = fill_color
+        self.is_filled = is_filled
+
+    def _draw_spiral(self, t):
+        self._begin_fill(t)
+
+        for i in range(self.steps):
+            t.move(i * self.growth)
+            t.rotate(-self.angle)
+
+        self._end_fill(t)
+
+    def draw(self, manager, turtle_name):
+        t = manager.get_turtle(turtle_name)
+
+        original_color = t.color()
+        original_fill_color = t.fill_color()
+
+        self._apply_color(t)
+        self._draw_spiral(t)
         self._restore_color(t, original_color, original_fill_color)
