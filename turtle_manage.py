@@ -142,7 +142,6 @@ class Turtle:
     
     def circle(self, radius, extent=360, steps=None):
         self._t.circle(radius, extent, steps)
-        self._manager.record(self._name, "circle", radius, extent, steps)
     
     def color(self, color=None):
         

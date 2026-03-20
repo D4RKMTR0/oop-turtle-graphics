@@ -33,6 +33,29 @@ class Shape:
         if self.fill_color and Shape._is_valid_color(self.fill_color):
             t.fill_color(original_fill_color)
 
+    @staticmethod
+    def from_dict(data):
+        shape_map = {
+            "Circle": Circle,
+            "Square": Square,
+            "Rectangle": Rectangle,
+            "EquilateralTriangle": EquilateralTriangle,
+            "Triangle": Triangle,
+            "Polygon": Polygon,
+            "Star": Star,
+            "Ellipse": Ellipse,
+            "Spiral": Spiral,
+        }
+
+        shape_type = data.get("type")
+        cls = shape_map.get(shape_type)
+
+        if cls is None:
+            raise ValueError(f"Unknown shape type: '{shape_type}'")
+
+        params = {k: v for k, v in data.items() if k != "type"}
+        return cls(**params)
+
 
 class Circle(Shape):
     def __init__(self, radius, extent=360, step=None, color=None, fill_color=None, is_filled=False, is_centered=False):
@@ -44,7 +67,7 @@ class Circle(Shape):
 
         if step is not None and step <= 0:
             raise ValueError(f"Step must be a positive number, got {step}.")
-        
+
         self.radius = radius
         self.extent = extent
         self.step = step
@@ -52,6 +75,18 @@ class Circle(Shape):
         self.fill_color = fill_color
         self.is_filled = is_filled
         self.is_centered = is_centered
+
+    def to_dict(self):
+        return {
+            "type": "Circle",
+            "radius": self.radius,
+            "extent": self.extent,
+            "step": self.step,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+        }
 
     def _draw_circle(self, t):
         self._begin_fill(t)
@@ -89,12 +124,22 @@ class Square(Shape):
     def __init__(self, side_length, color=None, fill_color=None, is_filled=False, is_centered=False):
         if side_length <= 0:
             raise ValueError(f"Side length must be a positive number, got '{side_length}'")
-        
+
         self.side_length = side_length
         self.color = color
         self.fill_color = fill_color
         self.is_filled = is_filled
         self.is_centered = is_centered
+
+    def to_dict(self):
+        return {
+            "type": "Square",
+            "side_length": self.side_length,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+        }
 
     def _draw_square(self, t):
         self._begin_fill(t)
@@ -150,14 +195,25 @@ class Square(Shape):
 class Rectangle(Shape):
     def __init__(self, width, height, color=None, fill_color=None, is_filled=False, is_centered=False):
         if width <= 0 or height <= 0:
-            raise ValueError(f"Width and Height bust be a positive number, got width: {width} and height: {height}")
-        
+            raise ValueError(f"Width and Height must be a positive number, got width: {width} and height: {height}")
+
         self.width = width
         self.height = height
         self.color = color
         self.fill_color = fill_color
         self.is_filled = is_filled
         self.is_centered = is_centered
+
+    def to_dict(self):
+        return {
+            "type": "Rectangle",
+            "width": self.width,
+            "height": self.height,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+        }
 
     def _draw_rectangle(self, t):
         self._begin_fill(t)
@@ -215,12 +271,22 @@ class EquilateralTriangle(Shape):
     def __init__(self, side_length, color=None, fill_color=None, is_filled=False, is_centered=False):
         if side_length <= 0:
             raise ValueError(f"Side length must be a positive number, got {side_length}.")
-        
+
         self.side_length = side_length
         self.color = color
         self.fill_color = fill_color
         self.is_filled = is_filled
         self.is_centered = is_centered
+
+    def to_dict(self):
+        return {
+            "type": "EquilateralTriangle",
+            "side_length": self.side_length,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+        }
 
     def _draw_triangle(self, t):
         self._begin_fill(t)
@@ -263,7 +329,7 @@ class Triangle(Shape):
     def __init__(self, side_a, side_b, side_c, color=None, fill_color=None, is_filled=False, is_centered=False):
         if side_a <= 0 or side_b <= 0 or side_c <= 0:
             raise ValueError(f"All sides must be positive numbers, got side_a: {side_a}, side_b: {side_b}, side_c: {side_c}.")
-        
+
         self.side_a = side_a
         self.side_b = side_b
         self.side_c = side_c
@@ -276,6 +342,18 @@ class Triangle(Shape):
                 self.side_b + self.side_c > self.side_a and
                 self.side_a + self.side_c > self.side_b):
             raise ValueError("Invalid triangle: sides do not form a valid triangle.")
+
+    def to_dict(self):
+        return {
+            "type": "Triangle",
+            "side_a": self.side_a,
+            "side_b": self.side_b,
+            "side_c": self.side_c,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+        }
 
     def _compute_angles(self):
         angle_a = math.acos(max(-1, min(1, (self.side_b**2 + self.side_c**2 - self.side_a**2) / (2 * self.side_b * self.side_c))))
@@ -346,33 +424,45 @@ class Triangle(Shape):
             self._draw_triangle(t)
 
         self._restore_color(t, original_color, original_fill_color)
-        
+
+
 class Polygon(Shape):
     def __init__(self, sides, side_length, color=None, fill_color=None, is_filled=False, is_centered=False):
         if sides < 3:
             raise ValueError("Polygon must have at least 3 sides.")
-        
+
         if side_length <= 0:
             raise ValueError(f"Side length must be a positive number, got {side_length}.")
-        
+
         self.sides = sides
         self.side_length = side_length
         self.color = color
         self.fill_color = fill_color
         self.is_filled = is_filled
         self.is_centered = is_centered
-        
+
+    def to_dict(self):
+        return {
+            "type": "Polygon",
+            "sides": self.sides,
+            "side_length": self.side_length,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+        }
+
     def _draw_polygon(self, t):
         exterior_angle = 360 / self.sides
-        
+
         self._begin_fill(t)
-        
+
         for _ in range(self.sides):
             t.move(self.side_length)
             t.rotate(-exterior_angle)
-            
+
         self._end_fill(t)
-            
+
     def _offset(self, t, reverse=False):
         circumradius = self.side_length / (2 * math.sin(math.pi / self.sides))
         angle = -90 if reverse else 90
@@ -382,10 +472,10 @@ class Polygon(Shape):
         t.move(circumradius)
         t.rotate(-angle)
         t.pen_down()
-        
+
     def draw(self, manager, turtle_name):
         t = manager.get_turtle(turtle_name)
-        
+
         original_color = t.color()
         original_fill_color = t.fill_color()
 
@@ -399,15 +489,16 @@ class Polygon(Shape):
             self._draw_polygon(t)
 
         self._restore_color(t, original_color, original_fill_color)
-        
+
+
 class Star(Shape):
     def __init__(self, points, size, color=None, fill_color=None, is_filled=False, is_centered=False, intersected=True):
         if points < 3:
             raise ValueError("Star must have at least 3 points.")
-        
+
         if size <= 0:
             raise ValueError(f"Size must be a positive number, got {size}.")
-        
+
         self.points = points
         self.size = size
         self.color = color
@@ -415,6 +506,18 @@ class Star(Shape):
         self.is_filled = is_filled
         self.is_centered = is_centered
         self.intersected = intersected
+
+    def to_dict(self):
+        return {
+            "type": "Star",
+            "points": self.points,
+            "size": self.size,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+            "intersected": self.intersected,
+        }
 
     def _draw_star_intersected(self, t):
         turn_angle = 180 - (180 / self.points)
@@ -475,7 +578,8 @@ class Star(Shape):
             self._draw(t)
 
         self._restore_color(t, original_color, original_fill_color)
-        
+
+
 class Ellipse(Shape):
     def __init__(self, radius_x, radius_y, color=None, fill_color=None, is_filled=False, is_centered=False, steps=100):
         if radius_x <= 0:
@@ -494,6 +598,18 @@ class Ellipse(Shape):
         self.is_filled = is_filled
         self.is_centered = is_centered
         self.steps = steps
+
+    def to_dict(self):
+        return {
+            "type": "Ellipse",
+            "radius_x": self.radius_x,
+            "radius_y": self.radius_y,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+            "is_centered": self.is_centered,
+            "steps": self.steps,
+        }
 
     def _get_point(self, origin, angle):
         angle_rad = math.radians(angle)
@@ -538,7 +654,8 @@ class Ellipse(Shape):
             self._restore_position(t, origin)
 
         self._restore_color(t, original_color, original_fill_color)
-        
+
+
 class Spiral(Shape):
     def __init__(self, steps, growth, angle, color=None, fill_color=None, is_filled=False):
         if steps <= 0:
@@ -546,7 +663,7 @@ class Spiral(Shape):
 
         if growth <= 0:
             raise ValueError(f"Growth must be a positive number, got {growth}.")
-        
+
         if angle == 0:
             raise ValueError("Angle cannot be 0, the spiral would never turn.")
 
@@ -556,6 +673,17 @@ class Spiral(Shape):
         self.color = color
         self.fill_color = fill_color
         self.is_filled = is_filled
+
+    def to_dict(self):
+        return {
+            "type": "Spiral",
+            "steps": self.steps,
+            "growth": self.growth,
+            "angle": self.angle,
+            "color": self.color,
+            "fill_color": self.fill_color,
+            "is_filled": self.is_filled,
+        }
 
     def _draw_spiral(self, t):
         self._begin_fill(t)
